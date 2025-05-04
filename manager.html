@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TurfMaster Manager Panel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"/>
+</head>
+<body>
+
+<!-- Manager Button -->
+<div class="container mt-5 text-center">
+  <button id="managerButton" class="btn btn-success">Login as Manager</button>
+</div>
+
+<!-- Login Form -->
+<div id="loginSection" class="container mt-5" style="display: none;">
+  <h3 class="mb-4 text-center">Login to TurfMaster Manager Panel</h3>
+  <div class="row justify-content-center">
+    <div class="col-md-4">
+      <form id="loginForm">
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" id="username" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" class="form-control" required />
+        </div>
+        <div class="mb-3 text-center">
+          <button type="submit" class="btn btn-primary w-100">Login</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Manager Panel (Hidden until login is successful) -->
+<div id="managerPanel" class="container mt-5" style="display: none;">
+  <header class="navbar navbar-expand-lg bg-white shadow-sm p-3">
+    <div class="container">
+      <a href="#" class="navbar-brand d-flex align-items-center">
+        <img src="logo.jpg" alt="TurfMaster Logo" class="me-2" height="40">
+        <span class="fw-bold fs-4">TurfMaster <span class="text-success">Manager Panel</span></span>
+      </a>
+    </div>
+  </header>
+
+  <h3 class="mb-4 text-center">All Turf Bookings (Live)</h3>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped">
+      <thead class="table-dark">
+        <tr>
+          <th>#</th>
+          <th>Turf Name</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Mobile</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>AM/PM</th>
+          <th>Hours</th>
+        </tr>
+      </thead>
+      <tbody id="bookingTable">
+        <tr><td colspan="9" class="text-center">Loading bookings...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer class="footer bg-dark text-white text-center p-3 mt-4">
+  <p>© 2025 TurfMaster. All Rights Reserved.</p>
+</footer>
+
+<script>
+  // Handle showing the login form when the manager button is clicked
+  const managerButton = document.getElementById('managerButton');
+  const loginSection = document.getElementById('loginSection');
+
+  // Show the login form when the "Login as Manager" button is clicked
+  managerButton.addEventListener('click', function() {
+    loginSection.style.display = 'block';
+    managerButton.style.display = 'none';  // Hide the "Manager" button
+  });
+
+  // Handle login validation
+  const loginForm = document.getElementById('loginForm');
+  const managerPanel = document.getElementById('managerPanel');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+
+  loginForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const username = usernameInput.value;
+    const password = passwordInput.value;
+
+    // Simple login check
+    if (username === 'admin' && password === '1234') {
+      // Hide login form and show manager panel
+      loginSection.style.display = 'none';
+      managerPanel.style.display = 'block';
+
+      // Fetch booking data from the server
+      fetch('get_bookings.php')
+        .then(res => res.json()) // Parse the response as JSON
+        .then(data => {
+          console.log("Fetched booking data:", data); // Debugging line to check fetched data
+          const table = document.getElementById('bookingTable');
+          table.innerHTML = ''; // Clear loading message
+
+          if (data.length === 0) {
+            table.innerHTML = '<tr><td colspan="9" class="text-center">No bookings found.</td></tr>';
+            return;
+          }
+
+          // Loop through the data and populate the table
+          data.forEach((booking, index) => {
+            const row = `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${booking.turfName}</td>
+                <td>${booking.username}</td>
+                <td>${booking.email}</td>
+                <td>${booking.mobile}</td>
+                <td>${booking.date}</td>
+                <td>${booking.time}</td>
+                <td>${booking.ampm}</td>
+                <td>${booking.hours}</td>
+              </tr>
+            `;
+            table.innerHTML += row; // Add row to the table body
+          });
+        })
+        .catch(err => {
+          // Handle errors and display a message
+          document.getElementById('bookingTable').innerHTML =
+            '<tr><td colspan="9" class="text-center text-danger">Error loading data</td></tr>';
+          console.error('Fetch error:', err);
+        });
+    } else {
+      alert('Incorrect username or password');
+    }
+  });
+</script>
+
+</body>
+</html>
